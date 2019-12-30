@@ -1,0 +1,411 @@
+Index: echo-service2/src/main/java/org/exampledriven/docker/echo/rest/EchoController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- echo-service2/src/main/java/org/exampledriven/docker/echo/rest/EchoController.java	(revision )
++++ echo-service2/src/main/java/org/exampledriven/docker/echo/rest/EchoController.java	(revision )
+@@ -0,0 +1,44 @@
++package org.exampledriven.docker.echo.rest;
++
++import org.exampledriven.docker.echo.domain.HostFactory;
++import org.exampledriven.docker.echo.domain.HostInfo;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.RequestMethod;
++import org.springframework.web.bind.annotation.RestController;
++
++import javax.servlet.http.HttpServletRequest;
++import java.util.HashMap;
++import java.util.Map;
++
++@RestController
++public class EchoController {
++    public static String hostName = "echo 2222";
++
++    @RequestMapping(value = "/echo", method = RequestMethod.GET, produces = "application/json")
++    public HostInfo getHost(HttpServletRequest request) {
++
++        return HostFactory.create(request, hostName, request.getRequestURL().toString());
++
++    }
++
++    @RequestMapping(value = "/", method = RequestMethod.GET, produces = "application/json")
++    public Map getFullInfo(HttpServletRequest request) {
++
++        HashMap result = new HashMap<>();
++
++        result.put("host", HostFactory.create(request, hostName, request.getRequestURL().toString()));
++
++        result.put("env", System.getenv());
++
++        return result;
++
++    }
++
++    @RequestMapping(value = "/health-uri", method = RequestMethod.GET, produces = "application/json")
++    public Map getHealth(HttpServletRequest request) {
++        Map result = new HashMap<>();
++        result.put("status", "UP");
++        return result;
++    }
++
++}
+\ No newline at end of file
+Index: echo-service2/src/main/java/org/exampledriven/docker/echo/Application.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- echo-service2/src/main/java/org/exampledriven/docker/echo/Application.java	(revision )
++++ echo-service2/src/main/java/org/exampledriven/docker/echo/Application.java	(revision )
+@@ -0,0 +1,21 @@
++package org.exampledriven.docker.echo;
++
++import org.springframework.boot.SpringApplication;
++import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
++import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
++import org.springframework.web.servlet.config.annotation.EnableWebMvc;
++
++//@EnableEurekaClient
++@EnableWebMvc
++@SpringBootApplication
++//@EnableDiscoveryClient
++public class Application {
++
++    public static void main(String[] args) {
++        SpringApplication.run(Application.class, args);
++    }
++
++}
++
++
+Index: echo-service2/src/main/resources/application.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- echo-service2/src/main/resources/application.yml	(revision )
++++ echo-service2/src/main/resources/application.yml	(revision )
+@@ -0,0 +1,25 @@
++server:
++  port: ${server_port:9099}
++
++#eureka:
++#  instance:
++#    leaseRenewalIntervalInSeconds: 1
++#    leaseExpirationDurationInSeconds: 2
++#  client:
++#    serviceUrl:
++#      defaultZone: ${eureka_url:http://eureka-server:8761/eureka/}
++#    healthcheck:
++#      enabled: true
++#    lease:
++#      duration: 5
++
++spring:
++  application:
++    name: echo-service2
++  devtools:
++    remote:
++      secret: mysecret
++
++management:
++  security:
++    enabled: false
+\ No newline at end of file
+Index: echo-service2/src/main/java/org/exampledriven/docker/echo/domain/HostFactory.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- echo-service2/src/main/java/org/exampledriven/docker/echo/domain/HostFactory.java	(revision )
++++ echo-service2/src/main/java/org/exampledriven/docker/echo/domain/HostFactory.java	(revision )
+@@ -0,0 +1,26 @@
++package org.exampledriven.docker.echo.domain;
++
++import javax.servlet.http.HttpServletRequest;
++import java.net.InetAddress;
++import java.net.UnknownHostException;
++
++/**
++ * Created by Peter_Szanto on 3/2/2017.
++ */
++public class HostFactory {
++
++    public static HostInfo create(HttpServletRequest request, String message, String url) {
++        return new HostInfo(request.getLocalAddr(), request.getLocalPort(), getHostName(), message, url);
++    }
++
++    private static String getHostName() {
++        InetAddress addr;
++        try {
++            addr = InetAddress.getLocalHost();
++        } catch (UnknownHostException e) {
++            throw new RuntimeException(e);
++        }
++        return addr.getHostName();
++    }
++
++}
+Index: echo-service2/src/main/java/org/exampledriven/docker/echo/rest/RemoteHostInfoClient.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- echo-service2/src/main/java/org/exampledriven/docker/echo/rest/RemoteHostInfoClient.java	(revision )
++++ echo-service2/src/main/java/org/exampledriven/docker/echo/rest/RemoteHostInfoClient.java	(revision )
+@@ -0,0 +1,25 @@
++package org.exampledriven.docker.echo.rest;
++
++import org.exampledriven.docker.echo.domain.HostInfo;
++import org.springframework.core.ParameterizedTypeReference;
++import org.springframework.http.HttpMethod;
++import org.springframework.stereotype.Component;
++import org.springframework.web.client.RestTemplate;
++
++@Component
++public class RemoteHostInfoClient {
++
++    public HostInfo getRemoteHostInfo(RestTemplate restTemplate, String url) {
++
++        HostInfo hostInfo = restTemplate.exchange(
++                url,
++                HttpMethod.GET,
++                null,
++                new ParameterizedTypeReference<HostInfo>() {})
++            .getBody();
++
++        return hostInfo;
++
++    }
++
++}
+\ No newline at end of file
+Index: docker-compose.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- docker-compose.yml	(revision 85364a7e963bdd3583c8ccc182941c4ebbd76eba)
++++ docker-compose.yml	(revision )
+@@ -20,15 +20,15 @@
+     deploy:
+       mode: replicated
+       replicas: 2
+-  sidecar-service:
+-    image: sidecar-service
+-    depends_on:
+-     - eureka-server
+-    ports:
+-      - "9100:9100"
+-    deploy:
+-      mode: replicated
+-      replicas: 2
++#  sidecar-service:
++#    image: sidecar-service
++#    depends_on:
++#     - eureka-server
++#    ports:
++#      - "9100:9100"
++#    deploy:
++#      mode: replicated
++#      replicas: 2
+   zuul-server:
+     image: zuul-server
+     depends_on:
+Index: echo-service2/src/main/java/org/exampledriven/docker/echo/Config.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- echo-service2/src/main/java/org/exampledriven/docker/echo/Config.java	(revision )
++++ echo-service2/src/main/java/org/exampledriven/docker/echo/Config.java	(revision )
+@@ -0,0 +1,47 @@
++package org.exampledriven.docker.echo;
++
++import com.netflix.appinfo.AmazonInfo;
++import org.springframework.beans.factory.annotation.Qualifier;
++import org.springframework.cloud.client.loadbalancer.LoadBalanced;
++import org.springframework.cloud.commons.util.InetUtils;
++import org.springframework.cloud.netflix.eureka.EurekaInstanceConfigBean;
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.context.annotation.Profile;
++import org.springframework.web.client.RestTemplate;
++
++/**
++ * Created by Peter_Szanto on 6/2/2016.
++ */
++@Configuration
++public class Config {
++
++    public static final String LOADBALANCED = "loadbalanced";
++    public static final String STANDARD = "standard";
++
++    @LoadBalanced
++    @Bean
++    @Qualifier(LOADBALANCED)
++    public RestTemplate loadBalancedRestTemplate() {
++        return new RestTemplate();
++    }
++
++    @Bean
++    @Qualifier(STANDARD)
++    public RestTemplate restTemplate() {
++        return new RestTemplate();
++    }
++
++    @Bean
++    @Profile("AWS")
++    public EurekaInstanceConfigBean eurekaInstanceConfig(InetUtils inetUtils) {
++        EurekaInstanceConfigBean config = new EurekaInstanceConfigBean(inetUtils);
++        AmazonInfo info = AmazonInfo.Builder.newBuilder().autoBuild("eureka");
++        config.setDataCenterInfo(info);
++        config.setHostname(info.get(AmazonInfo.MetaDataKey.localHostname));
++        config.setIpAddress(info.get(AmazonInfo.MetaDataKey.publicIpv4));
++        config.setNonSecurePort(9098);
++        return config;
++    }
++
++}
+Index: echo-service2/src/main/java/org/exampledriven/docker/echo/rest/RemoteEchoController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- echo-service2/src/main/java/org/exampledriven/docker/echo/rest/RemoteEchoController.java	(revision )
++++ echo-service2/src/main/java/org/exampledriven/docker/echo/rest/RemoteEchoController.java	(revision )
+@@ -0,0 +1,59 @@
++package org.exampledriven.docker.echo.rest;
++
++import org.exampledriven.docker.echo.Config;
++import org.exampledriven.docker.echo.domain.HostFactory;
++import org.exampledriven.docker.echo.domain.HostInfo;
++import org.springframework.beans.factory.annotation.Autowired;
++import org.springframework.beans.factory.annotation.Qualifier;
++import org.springframework.web.bind.annotation.GetMapping;
++import org.springframework.web.bind.annotation.RequestMapping;
++import org.springframework.web.bind.annotation.RestController;
++import org.springframework.web.client.RestTemplate;
++
++import java.util.HashMap;
++import java.util.Map;
++
++import javax.servlet.http.HttpServletRequest;
++
++@RestController
++@RequestMapping(value = "/echo")
++public class RemoteEchoController {
++
++    @Autowired
++    @Qualifier(Config.LOADBALANCED)
++    RestTemplate loadBalancedRestTemplate;
++
++    @Autowired
++    @Qualifier(Config.STANDARD)
++    RestTemplate restTemplate;
++
++    @Autowired
++    RemoteHostInfoClient remoteHostInfoClient;
++
++    @GetMapping(value = "/remote-echo", produces = "application/json")
++    public Map<String, HostInfo> getHost(HttpServletRequest request) {
++
++        Map result = new HashMap<String, HostInfo>();
++        result.put("local", HostFactory.create(request, EchoController.hostName, request.getRequestURL().toString()));
++
++        getRemoteHostInfo(result, "http://example_echo-service:9099/echo (Docker swarm service)", restTemplate,
++                "http://example_echo-service:9099/echo");
++        getRemoteHostInfo(result, "http://echo-service:9099/echo (Docker compose DNS entry)", restTemplate,
++                "http://echo-service:9098/echo");
++        getRemoteHostInfo(result, "http://echo-service/echo (Ribbon+Eureka)", loadBalancedRestTemplate, "http://echo-service/echo");
++
++        return result;
++
++    }
++
++    private void getRemoteHostInfo(Map result, String key, RestTemplate loadBalancedRestTemplate, String url) {
++        HostInfo remoteHostInfo = null;
++        try {
++            remoteHostInfo = remoteHostInfoClient.getRemoteHostInfo(loadBalancedRestTemplate, url);
++        } catch (Exception e) {
++            e.printStackTrace();
++        }
++        result.put(key, remoteHostInfo);
++    }
++
++}
+\ No newline at end of file
+Index: echo-service2/src/main/java/org/exampledriven/docker/echo/domain/HostInfo.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- echo-service2/src/main/java/org/exampledriven/docker/echo/domain/HostInfo.java	(revision )
++++ echo-service2/src/main/java/org/exampledriven/docker/echo/domain/HostInfo.java	(revision )
+@@ -0,0 +1,64 @@
++package org.exampledriven.docker.echo.domain;
++
++/**
++ * Created by Peter_Szanto on 6/16/2016.
++ */
++public class HostInfo {
++
++    private String address;
++    private int port;
++    private String hostName;
++    private String message;
++    private String url;
++
++    public HostInfo() {
++    }
++
++    public HostInfo(String address, int port, String hostName, String message, String url) {
++        this.address = address;
++        this.port = port;
++        this.hostName = hostName;
++        this.message = message;
++        this.url = url;
++    }
++
++    public String getAddress() {
++        return address;
++    }
++
++    public void setAddress(String address) {
++        this.address = address;
++    }
++
++    public int getPort() {
++        return port;
++    }
++
++    public void setPort(int port) {
++        this.port = port;
++    }
++
++    public String getHostName() {
++        return hostName;
++    }
++
++    public void setHostName(String hostName) {
++        this.hostName = hostName;
++    }
++
++    public String getMessage() {
++        return message;
++    }
++
++    public void setMessage(String message) {
++        this.message = message;
++    }
++
++    public String getUrl() {
++        return url;
++    }
++
++    public void setUrl(String url) {
++        this.url = url;
++    }
++}

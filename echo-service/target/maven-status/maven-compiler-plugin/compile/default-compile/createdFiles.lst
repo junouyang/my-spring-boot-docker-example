@@ -1,0 +1,8 @@
+org/exampledriven/docker/echo/rest/RemoteHostInfoClient.class
+org/exampledriven/docker/echo/rest/EchoController.class
+org/exampledriven/docker/echo/rest/RemoteHostInfoClient$1.class
+org/exampledriven/docker/echo/Application.class
+org/exampledriven/docker/echo/rest/RemoteEchoController.class
+org/exampledriven/docker/echo/Config.class
+org/exampledriven/docker/echo/domain/HostFactory.class
+org/exampledriven/docker/echo/domain/HostInfo.class

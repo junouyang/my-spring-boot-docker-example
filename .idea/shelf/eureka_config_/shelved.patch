@@ -1,0 +1,49 @@
+Index: eureka-server/src/main/resources/application.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- eureka-server/src/main/resources/application.yml	(revision 85364a7e963bdd3583c8ccc182941c4ebbd76eba)
++++ eureka-server/src/main/resources/application.yml	(revision )
+@@ -1,27 +1,18 @@
+ server:
+-  port: ${server_port:9100}
++  port: 8761
+ 
+-#eureka:
+-#  instance:
+-#    virtual-host-name: 192.168.99.100
+ eureka:
+-  instance:
+-    leaseRenewalIntervalInSeconds: 1
+-    leaseExpirationDurationInSeconds: 2
+   client:
+-    serviceUrl:
+-      defaultZone: ${eureka_url:http://eureka-server:8761/eureka/}
+-    healthcheck:
+-      enabled: true
+-    lease:
+-      duration: 5
++    registerWithEureka: false
++    fetchRegistry: false
++  server:
++    enableSelfPreservation: false
+ 
++#spring:
++#  application:
++#    name: sidecar-service
+ 
+-spring:
+-  application:
+-    name: sidecar-service
+- 
+-sidecar:
+-  port: 9099
+-  home-page-uri: http://192.168.99.100:${sidecar.port}/
+-  health-uri: http://192.168.99.100:${sidecar.port}/health-uri
+\ No newline at end of file
++#sidecar:
++#  port: 9099
++#  home-page-uri: http://192.168.99.100:${sidecar.port}/
++#  health-uri: http://192.168.99.100:${sidecar.port}/health-uri
+\ No newline at end of file

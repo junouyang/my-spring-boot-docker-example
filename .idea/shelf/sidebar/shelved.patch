@@ -1,0 +1,157 @@
+Index: sidecar-server/src/main/java/org/exampledriven/sidecar/SampleSidecarApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- sidecar-server/src/main/java/org/exampledriven/sidecar/SampleSidecarApplication.java	(revision )
++++ sidecar-server/src/main/java/org/exampledriven/sidecar/SampleSidecarApplication.java	(revision )
+@@ -0,0 +1,14 @@
++package org.exampledriven.sidecar;
++
++import org.springframework.boot.SpringApplication;
++import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.cloud.netflix.sidecar.EnableSidecar;
++
++@SpringBootApplication
++@EnableSidecar
++public class SampleSidecarApplication {
++
++	public static void main(String[] args) {
++		SpringApplication.run(SampleSidecarApplication.class, args);
++	}
++}
+\ No newline at end of file
+Index: sidecar-server/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- sidecar-server/pom.xml	(revision )
++++ sidecar-server/pom.xml	(revision )
+@@ -0,0 +1,90 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
++    <modelVersion>4.0.0</modelVersion>
++
++    <groupId>org.exampledriven.boot-docker</groupId>
++    <artifactId>sidecar-service</artifactId>
++    <version>0.0.1-SNAPSHOT</version>
++    <packaging>jar</packaging>
++
++    <name>Sidecar Service</name>
++    <description>Sidecar Service</description>
++
++    <parent>
++        <groupId>org.springframework.boot</groupId>
++        <artifactId>spring-boot-starter-parent</artifactId>
++        <version>1.5.0.RELEASE</version>
++        <relativePath/>
++    </parent>
++
++    <properties>
++        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
++        <java.version>1.8</java.version>
++    </properties>
++
++    <dependencies>
++        <!-- https://mvnrepository.com/artifact/org.springframework.cloud/spring-cloud-netflix-sidecar -->
++        <dependency>
++            <groupId>org.springframework.cloud</groupId>
++            <artifactId>spring-cloud-netflix-sidecar</artifactId>
++            <!--<version>2.0.0.M4</version>-->
++        </dependency>
++
++        <dependency>
++            <groupId>org.springframework.boot</groupId>
++            <artifactId>spring-boot-starter-actuator</artifactId>
++        </dependency>
++
++    </dependencies>
++
++    <dependencyManagement>
++        <dependencies>
++            <dependency>
++                <groupId>org.springframework.cloud</groupId>
++                <artifactId>spring-cloud-dependencies</artifactId>
++                <version>Camden.SR5</version>
++                <type>pom</type>
++                <scope>import</scope>
++            </dependency>
++        </dependencies>
++    </dependencyManagement>
++
++    <build>
++        <plugins>
++            <plugin>
++                <groupId>org.springframework.boot</groupId>
++                <artifactId>spring-boot-maven-plugin</artifactId>
++            </plugin>
++
++            <plugin>
++                <groupId>com.spotify</groupId>
++                <artifactId>docker-maven-plugin</artifactId>
++                <version>0.4.10</version>
++                <configuration>
++                    <imageName>${project.artifactId}</imageName>
++                    <baseImage>java:8</baseImage>
++                    <entryPoint>["java", "-jar", "/${project.build.finalName}.jar"]</entryPoint>
++                    <!-- copy the service's jar file from target into the root directory of the image -->
++                    <resources>
++                        <resource>
++                            <targetPath>/</targetPath>
++                            <directory>${project.build.directory}</directory>
++                            <include>${project.build.finalName}.jar</include>
++                        </resource>
++                    </resources>
++                </configuration>
++                <executions>
++                    <execution>
++                        <id>build-image</id>
++                        <phase>package</phase>
++                        <goals>
++                            <goal>build</goal>
++                        </goals>
++                    </execution>
++                </executions>
++            </plugin>
++        </plugins>
++    </build>
++
++</project>
+Index: sidecar-server/src/main/resources/application.yml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- sidecar-server/src/main/resources/application.yml	(revision )
++++ sidecar-server/src/main/resources/application.yml	(revision )
+@@ -0,0 +1,27 @@
++server:
++  port: ${server_port:9100}
++
++#eureka:
++#  instance:
++#    virtual-host-name: 192.168.99.100
++eureka:
++  instance:
++    leaseRenewalIntervalInSeconds: 1
++    leaseExpirationDurationInSeconds: 2
++  client:
++    serviceUrl:
++      defaultZone: ${eureka_url:http://eureka-server:8761/eureka/}
++    healthcheck:
++      enabled: true
++    lease:
++      duration: 5
++
++
++spring:
++  application:
++    name: sidecar-service
++ 
++sidecar:
++  port: 9099
++  home-page-uri: http://192.168.99.100:${sidecar.port}/
++  health-uri: http://192.168.99.100:${sidecar.port}/health-uri
+\ No newline at end of file

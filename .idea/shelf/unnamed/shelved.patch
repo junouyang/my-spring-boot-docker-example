@@ -1,0 +1,23 @@
+Index: eureka-server/src/main/java/org/exampledriven/sidecar/SampleSidecarApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- eureka-server/src/main/java/org/exampledriven/sidecar/SampleSidecarApplication.java	(revision )
++++ eureka-server/src/main/java/org/exampledriven/sidecar/SampleSidecarApplication.java	(revision )
+@@ -0,0 +1,14 @@
++package org.exampledriven.sidecar;
++
++import org.springframework.boot.SpringApplication;
++import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.cloud.netflix.sidecar.EnableSidecar;
++
++@SpringBootApplication
++@EnableSidecar
++public class SampleSidecarApplication {
++
++	public static void main(String[] args) {
++		SpringApplication.run(SampleSidecarApplication.class, args);
++	}
++}
+\ No newline at end of file

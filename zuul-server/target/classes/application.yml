@@ -1,0 +1,27 @@
+server:
+  port: ${server_port:9090}
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: ${eureka_url:http://eureka-server:8761/eureka/}
+
+zuul:
+  prefix: /api
+#  Uncomment to disable services automatically registering in Zuul
+#  ignoredServices: '*'
+
+  routes:
+    echo-by-dns:
+      path: /echo-service-by-dns/**
+      url: http://echo-service:9098
+    controller:
+      path: /controller
+
+spring:
+  application:
+    name: zuul-server
+
+management:
+  security:
+    enabled: false

@@ -1,0 +1,7 @@
+/Users/jun.ouyang/development/github-practice/my-spring-boot-docker-example/echo-service/src/main/java/org/exampledriven/docker/echo/rest/RemoteHostInfoClient.java
+/Users/jun.ouyang/development/github-practice/my-spring-boot-docker-example/echo-service/src/main/java/org/exampledriven/docker/echo/Config.java
+/Users/jun.ouyang/development/github-practice/my-spring-boot-docker-example/echo-service/src/main/java/org/exampledriven/docker/echo/rest/EchoController.java
+/Users/jun.ouyang/development/github-practice/my-spring-boot-docker-example/echo-service/src/main/java/org/exampledriven/docker/echo/Application.java
+/Users/jun.ouyang/development/github-practice/my-spring-boot-docker-example/echo-service/src/main/java/org/exampledriven/docker/echo/rest/RemoteEchoController.java
+/Users/jun.ouyang/development/github-practice/my-spring-boot-docker-example/echo-service/src/main/java/org/exampledriven/docker/echo/domain/HostFactory.java
+/Users/jun.ouyang/development/github-practice/my-spring-boot-docker-example/echo-service/src/main/java/org/exampledriven/docker/echo/domain/HostInfo.java

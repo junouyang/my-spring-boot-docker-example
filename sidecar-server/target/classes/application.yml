@@ -1,0 +1,27 @@
+server:
+  port: ${server_port:9100}
+
+#eureka:
+#  instance:
+#    virtual-host-name: 192.168.99.100
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 1
+    leaseExpirationDurationInSeconds: 2
+  client:
+    serviceUrl:
+      defaultZone: ${eureka_url:http://eureka-server:8761/eureka/}
+    healthcheck:
+      enabled: true
+    lease:
+      duration: 5
+
+
+spring:
+  application:
+    name: sidecar-service
+ 
+sidecar:
+  port: 9099
+  home-page-uri: http://192.168.99.100:${sidecar.port}/
+  health-uri: http://192.168.99.100:${sidecar.port}/health-uri
